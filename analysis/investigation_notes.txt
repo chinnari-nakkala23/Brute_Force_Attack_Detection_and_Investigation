@@ -1,0 +1,55 @@
+Brute-Force Attack Detection Using Splunk – Investigation Notes:
+
+1. Objective:
+
+To monitor Windows Security Logs using Splunk and identify repeated failed login attempts that may indicate suspicious authentication activity.
+
+2. Lab Environment:
+
+* Operating System: Windows 11
+* SIEM Tool: Splunk Enterprise 10.6.0.5
+* Log Source: Windows Security Event Logs
+* Index: main
+
+3. Detection Method:
+
+Windows Event ID 4625 represents a failed logon attempt. Splunk Search Processing Language (SPL) was used to search and analyze these events.
+
+SPL Query:
+
+index=main sourcetype="WinEventLog:Security" EventCode=4625
+
+4. Investigation Findings:
+
+* Multiple failed login events were identified.
+* The account name observed included UPENDRAS.
+* Four failed login events for this account appeared within approximately 21 seconds in the investigated results.
+* The failure status observed was 0xC000006D, with sub-status 0xC000006A.
+* The source network address observed was 127.0.0.1, which is the local loopback address.
+
+5. Detection Query
+index=main sourcetype="WinEventLog:Security" EventCode=4625
+| stats count as failed_logins
+| where failed_logins >= 5
+
+This query counts failed logon events and returns a result when the total reaches at least five.
+
+6. Alert Configuration:
+
+An alert named "Repeated Failed Login Detection" was created in Splunk with a real-time trigger condition and the "Add to Triggered Alerts" action.
+
+The alert was enabled, but no fired event was observed during testing.
+
+7. Initial Assessment:
+
+The lab demonstrated how repeated failed login attempts can be detected and investigated using Splunk. Since the observed source address was 127.0.0.1, the activity represents local lab-generated login failures and does not confirm an external brute-force attack.
+
+8. Tools Used:
+
+* Splunk Enterprise
+* Windows Security Event Logs
+* SPL (Search Processing Language)
+
+9. Conclusion:
+
+This exercise provided hands-on practice in Windows authentication log analysis, repeated failed-login detection, account investigation, and alert configuration in a SIEM environment.
