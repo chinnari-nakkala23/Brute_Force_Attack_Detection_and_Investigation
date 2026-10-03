@@ -1,0 +1,67 @@
+BRUTE-FORCE ATTACK DETECTION & INVESTIGATION USING SPLUNK
+
+1. Incident Summary
+
+A Windows Security Log investigation was performed using Splunk to identify repeated failed login attempts that could indicate suspicious authentication activity.
+
+2. Detection
+
+Windows Event ID 4625 was used to identify failed Windows logon attempts.
+
+The following SPL query was used:
+
+index=main sourcetype="WinEventLog:Security" EventCode=4625
+
+3. Investigation
+
+Multiple failed login events were identified in Splunk.
+
+The account UPENDRAS was observed with repeated failed login attempts occurring within a short period of time.
+
+The observed failure details included:
+
+Failure Reason: An error occurred during logon
+Status: 0xC000006D
+Sub Status: 0xC000006A
+
+4. Source Investigation
+
+The Source Network Address observed in the Windows Security events was:
+
+127.0.0.1
+
+This is the local loopback address. Therefore, the activity was treated as locally generated lab activity rather than confirmed external brute-force activity.
+
+5. Detection Logic
+
+The following SPL query was used to detect repeated failed logins:
+
+index=main sourcetype="WinEventLog:Security" EventCode=4625
+| stats count as failed_logins
+| where failed_logins >= 5
+
+6. Alert Configuration
+
+A Splunk alert named:
+
+Repeated Failed Login Detection
+
+was configured with:
+
+Alert Type: Real-time
+Trigger Condition: Number of Results > 0
+Action: Add to Triggered Alerts
+
+The alert was enabled, but no fired event was observed during testing.
+
+7. Tools Used
+
+Splunk Enterprise 10.6.0.5
+Windows Security Event Logs
+SPL (Search Processing Language)
+
+8. Conclusion
+
+The investigation demonstrated a basic SOC workflow for detecting and investigating repeated failed login attempts using Splunk.
+
+The activity was generated in a controlled Windows lab environment. Because the observed source address was 127.0.0.1, the evidence does not establish a real external brute-force attack.
